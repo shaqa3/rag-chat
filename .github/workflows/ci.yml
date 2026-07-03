@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt httpx
+
+      - name: Boot app and smoke-test the RAG loop
+        # Offline backends (hash embeddings + extractive answers) so CI needs no
+        # GPU or Ollama daemon but still exercises chunk -> embed -> retrieve ->
+        # cite -> refuse end to end.
+        env:
+          RAG_EMBED_BACKEND: offline
+          RAG_LLM_BACKEND: offline
+        run: |
+          python - <<'PY'
+          import json
+          from fastapi.testclient import TestClient
+          from app.main import app
+
+          with TestClient(app) as c:
+              # Lifespan seeds the bundled corpus.
+              h = c.get("/api/health").json()
+              assert h["status"] == "ok"
+              assert h["store"]["chunks"] > 0, h
+              assert c.get("/openapi.json").status_code == 200
+
+              # Ingest a new document, then remove it.
+              r = c.post("/api/ingest", json={"title": "Test Doc",
+                         "text": "Widgets ship in blue and green. The blue widget weighs 2kg."})
+              assert r.status_code == 200 and r.json()["n_chunks"] >= 1
+              new_id = r.json()["doc_id"]
+
+              # Retrieval finds the right document.
+              s = c.post("/api/search", json={"query": "version history on Pro"}).json()
+              assert "Retention" in s["results"][0]["doc_title"], s["results"][0]
+
+              # Hybrid vs dense-only both return results.
+              assert c.post("/api/search",
+                            json={"query": "rate limit", "hybrid": False}).json()["results"]
+
+              # Streaming chat: sources up front, tokens, a citation, done.
+              with c.stream("POST", "/api/chat",
+                            json={"question": "What is the Free plan API rate limit?"}) as resp:
+                  events, answer, ev = [], "", None
+                  for line in resp.iter_lines():
+                      if line.startswith("event:"): ev = line.split(":", 1)[1].strip()
+                      elif line.startswith("data:"):
+                          d = json.loads(line.split(":", 1)[1]); events.append(ev)
+                          if ev == "token": answer += d["text"]
+              assert "sources" in events and "done" in events, events
+              assert "[" in answer, answer  # grounded / cited
+
+              # Cite-or-refuse: an out-of-corpus, token-disjoint query is refused.
+              with c.stream("POST", "/api/chat",
+                            json={"question": "quantum chromodynamics gluon lagrangian"}) as resp:
+                  assert any("refusal" in l for l in resp.iter_lines())
+
+              # Eval harness runs and hybrid MRR >= dense-only MRR.
+              hy = c.post("/api/eval", json={"hybrid": True}).json()["summary"]
+              dz = c.post("/api/eval", json={"hybrid": False}).json()["summary"]
+              assert hy["hit_at_k"] == 1.0, hy
+              assert hy["mrr"] >= dz["mrr"], (hy, dz)
+
+              assert c.delete(f"/api/documents/{new_id}").status_code == 200
+              print("OK  hit@k=%.2f  hybrid_mrr=%.3f  dense_mrr=%.3f"
+                    % (hy["hit_at_k"], hy["mrr"], dz["mrr"]))
+          PY
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Type-check and build
+        run: npm run build
