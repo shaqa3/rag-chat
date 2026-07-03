@@ -1,0 +1,74 @@
+[
+  {
+    "question": "How long does Nimbus keep version history on the Pro plan?",
+    "relevant_doc": "Retention",
+    "expect_keywords": ["365"],
+    "answerable": true
+  },
+  {
+    "question": "How much does the Pro plan cost per month?",
+    "relevant_doc": "Pricing",
+    "expect_keywords": ["$8", "annually"],
+    "answerable": true
+  },
+  {
+    "question": "What happens if I forget my passphrase with end-to-end encryption on?",
+    "relevant_doc": "Security",
+    "expect_keywords": ["recovery key", "unrecoverable"],
+    "answerable": true
+  },
+  {
+    "question": "What is the API rate limit for a Free token?",
+    "relevant_doc": "API",
+    "expect_keywords": ["60", "minute"],
+    "answerable": true
+  },
+  {
+    "question": "What HTTP status does the API return when I exceed the rate limit?",
+    "relevant_doc": "API",
+    "expect_keywords": ["429"],
+    "answerable": true
+  },
+  {
+    "question": "How long do deleted notes stay in the Trash before being purged?",
+    "relevant_doc": "Retention",
+    "expect_keywords": ["30 days"],
+    "answerable": true
+  },
+  {
+    "question": "How does Nimbus handle editing the same note on two devices offline?",
+    "relevant_doc": "Overview",
+    "expect_keywords": ["merge", "conflict"],
+    "answerable": true
+  },
+  {
+    "question": "Can I publish a public page from an end-to-end encrypted notebook?",
+    "relevant_doc": "Security",
+    "expect_keywords": ["disabled"],
+    "answerable": true
+  },
+  {
+    "question": "How much storage does the Free plan include?",
+    "relevant_doc": "Pricing",
+    "expect_keywords": ["5 GB"],
+    "answerable": true
+  },
+  {
+    "question": "What is the maximum attachment size on the Free plan?",
+    "relevant_doc": "API",
+    "expect_keywords": ["25 MB"],
+    "answerable": true
+  },
+  {
+    "question": "Does Nimbus offer a self-hosted on-premise server for air-gapped networks?",
+    "relevant_doc": "",
+    "expect_keywords": [],
+    "answerable": false
+  },
+  {
+    "question": "What is the phone number for Nimbus billing support?",
+    "relevant_doc": "",
+    "expect_keywords": [],
+    "answerable": false
+  }
+]

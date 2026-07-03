@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+backend/data/rag.db
+backend/data/rag.db-wal
+backend/data/rag.db-shm
+*.db
+
+# Node
+node_modules/
+dist/
+*.log
+*.tsbuildinfo
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/

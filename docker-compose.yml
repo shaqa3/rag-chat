@@ -1,0 +1,29 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - rag-data:/app/data
+    environment:
+      # Point at an Ollama daemon running on the host machine.
+      OLLAMA_HOST: "http://host.docker.internal:11434"
+      RAG_EMBED_MODEL: "nomic-embed-text"
+      RAG_CHAT_MODEL: "llama3.2"
+      # To run the demo without Ollama, uncomment these two:
+      # RAG_EMBED_BACKEND: "offline"
+      # RAG_LLM_BACKEND: "offline"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "4173:4173"
+    depends_on:
+      - backend
+    # In production you'd front the API with a reverse proxy; for the demo,
+    # run `npm run dev` (Vite proxy) instead — see the README.
+
+volumes:
+  rag-data:
