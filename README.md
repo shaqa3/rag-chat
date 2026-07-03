@@ -84,18 +84,30 @@ library, and the whole thing runs with just `python` + `npm` (+ Ollama).
 make ollama-setup          # ollama pull nomic-embed-text && ollama pull llama3.2
 ```
 
-### 2. Install and run
+### 2. Start and stop
 
 ```bash
-./start.sh                 # first-run setup + both servers, then opens the browser
+./start.sh                 # or: make start
+# ... use the app ...
+./stop.sh                  # or: make stop
 ```
 
 `start.sh` handles the venv + npm install on first run, checks that Ollama is
-reachable (falling back to the offline backend if not), frees stale ports, and
-starts the backend (:8000) and chat UI (:5173). Flags: `--offline` (no Ollama),
-`--no-open` (skip the browser). Stop everything with `./stop.sh` (add `--ollama`
-to also stop the daemon). Prefer the raw targets? `make install && make dev`
-does the same thing.
+reachable (falling back to the offline backend if not), frees stale ports, starts
+the backend (:8000) and chat UI (:5173), and opens the browser. `stop.sh` tears
+them back down.
+
+| Command                    | What it does                                         |
+| -------------------------- | ---------------------------------------------------- |
+| `./start.sh`               | Setup if needed, start both servers, open the browser |
+| `./start.sh --offline`     | Start with the offline backend (no Ollama)           |
+| `./start.sh --no-open`     | Start without opening the browser                    |
+| `./stop.sh`                | Stop the backend + frontend                          |
+| `./stop.sh --ollama`       | Also stop the Ollama daemon                           |
+
+Each has a `make` equivalent: `make start`, `make stop`
+(`make stop ARGS=--ollama` to include the daemon). Prefer the raw targets?
+`make install && make dev` runs setup and both servers directly.
 
 Open <http://localhost:5173>. The bundled **Nimbus** sample corpus (a fictional
 product's docs) is ingested on first boot, so you can chat immediately. Try
