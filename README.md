@@ -93,7 +93,8 @@ make ollama-setup          # ollama pull nomic-embed-text && ollama pull llama3.
 `start.sh` handles the venv + npm install on first run, checks that Ollama is
 reachable (falling back to the offline backend if not), frees stale ports, and
 starts the backend (:8000) and chat UI (:5173). Flags: `--offline` (no Ollama),
-`--no-open` (skip the browser). Prefer the raw targets? `make install && make dev`
+`--no-open` (skip the browser). Stop everything with `./stop.sh` (add `--ollama`
+to also stop the daemon). Prefer the raw targets? `make install && make dev`
 does the same thing.
 
 Open <http://localhost:5173>. The bundled **Nimbus** sample corpus (a fictional
