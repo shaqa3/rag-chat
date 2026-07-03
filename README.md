@@ -19,6 +19,8 @@ The vector store is a roll-your-own **SQLite + NumPy** index — no Chroma, FAIS
 or pgvector — so the retrieval mechanics are visible rather than hidden behind a
 library, and the whole thing runs with just `python` + `npm` (+ Ollama).
 
+![RAG Chat demo — asking a question, watching the cited answer stream in from llama3.2, expanding a retrieved source with its cosine and BM25 scores, then inspecting hybrid retrieval in the retrieval inspector](assets/demo.gif)
+
 ## The RAG pipeline
 
 ```
