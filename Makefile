@@ -1,4 +1,5 @@
-.PHONY: install backend backend-offline frontend dev ollama-setup eval docker clean
+.PHONY: install backend backend-offline frontend dev start stop \
+	ollama-setup eval eval-ollama eval-repeats docker clean
 
 # One-time setup: Python venv + npm deps.
 install:
@@ -32,6 +33,14 @@ dev:
 	( cd backend && . .venv/bin/activate && uvicorn app.main:app --reload --port 8000 ) & \
 	( cd frontend && npm run dev ) & \
 	wait
+
+# One-command launcher: setup if needed, Ollama check, start both, open browser.
+start:
+	./start.sh
+
+# Stop the local services (add ARGS=--ollama to also stop the daemon).
+stop:
+	./stop.sh $(ARGS)
 
 # Run the eval harness from the CLI (offline backend) and print the summary.
 # This is README Experiment 1; sweep it with `RAG_CHUNK_TOKENS=<n> make eval`.
