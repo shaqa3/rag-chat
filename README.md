@@ -85,9 +85,14 @@ make ollama-setup          # ollama pull nomic-embed-text && ollama pull llama3.
 ### 2. Install and run
 
 ```bash
-make install               # Python venv + npm deps
-make dev                   # backend :8000 + chat UI :5173
+./start.sh                 # first-run setup + both servers, then opens the browser
 ```
+
+`start.sh` handles the venv + npm install on first run, checks that Ollama is
+reachable (falling back to the offline backend if not), frees stale ports, and
+starts the backend (:8000) and chat UI (:5173). Flags: `--offline` (no Ollama),
+`--no-open` (skip the browser). Prefer the raw targets? `make install && make dev`
+does the same thing.
 
 Open <http://localhost:5173>. The bundled **Nimbus** sample corpus (a fictional
 product's docs) is ingested on first boot, so you can chat immediately. Try
