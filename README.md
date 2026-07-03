@@ -162,11 +162,10 @@ Run it from the UI (Evals tab), the API, or the CLI:
 make eval                  # python -m app.evalcli
 ```
 
-### Experiment: does hybrid reranking help, and what chunk size?
+### Experiment 1: does hybrid reranking help, and what chunk size?
 
-Sweeping `RAG_CHUNK_TOKENS` over the bundled 12-question set (offline backend, so
-these are reproducible in CI — with real `nomic-embed-text` embeddings the dense
-retriever gets stronger, but the *relative* story holds):
+Sweeping `RAG_CHUNK_TOKENS` over the bundled 12-question set on the **offline**
+backend (hash embeddings, so it's reproducible in CI):
 
 | chunk_tokens | #chunks | dense-only MRR | **hybrid MRR** |
 | -----------: | ------: | -------------: | -------------: |
@@ -175,11 +174,33 @@ retriever gets stronger, but the *relative* story holds):
 |      **220** |      10 |          0.833 |      **0.925** |
 |          320 |       5 |          0.825 |      **0.950** |
 
-**Takeaways:** (1) hybrid retrieval beats dense-only at *every* chunk size — the
-BM25 half consistently rescues exact-term questions (rate limits, `429`, "5 GB")
-that dense retrieval ranks lower; (2) `hit@k` is 1.0 throughout on this small
-corpus, so MRR — *how high* the right chunk ranks — is the discriminating metric.
-Reproduce with `RAG_CHUNK_TOKENS=<n> make eval`.
+With the offline backend's *lexical* hash embeddings, hybrid retrieval beats
+dense-only at every chunk size — the BM25 half rescues exact-term questions
+(rate limits, `429`, "5 GB") that weak embeddings rank too low. `hit@k` is 1.0
+throughout on this small corpus, so MRR — *how high* the right chunk ranks — is
+the discriminating metric. Reproduce with `RAG_CHUNK_TOKENS=<n> make eval`.
+
+### Experiment 2: does that hold with real embeddings? (No.)
+
+The interesting result. Re-running the same set on **real Ollama**
+(`nomic-embed-text` retrieval + `llama3.2` answers, 5 runs, `chunk_tokens=220`):
+
+| retriever   | hit@k | MRR (stable) | coverage — mean [min–max] | grounded — mean [min–max] | accuracy — mean [min–max] |
+| ----------- | ----: | -----------: | :-----------------------: | :-----------------------: | :-----------------------: |
+| **hybrid**  |  1.00 |    **0.925** |     0.94 [0.90–1.00]      |     0.88 [0.80–0.90]      |     0.95 [0.92–1.00]      |
+| dense only  |  1.00 |    **0.925** |     0.93 [0.80–1.00]      |     0.86 [0.60–1.00]      |     0.97 [0.92–1.00]      |
+
+**Takeaways:** (1) with strong *semantic* embeddings, **dense-only closes the MRR
+gap** (0.925 = 0.925) — the reranking win in Experiment 1 was really a
+weak-embedding effect on a small, topically-distinct corpus; (2) the answer
+metrics for the two retrievers **overlap within run-to-run LLM noise**, so
+neither clearly wins downstream here. The honest conclusion: hybrid retrieval is
+a cheap *safety net* — it earns its keep when embeddings are weak, queries are
+exact-term/out-of-distribution, or the corpus is large and noisy, not as a
+guaranteed uplift on every setup. Answer metrics (coverage/grounded/accuracy)
+vary between runs because `llama3.2` sampling is non-deterministic; only the
+retrieval metrics (hit@k, MRR) are stable. Reproduce with `make eval` (Ollama
+running) — expect the answer numbers to wobble, the retrieval numbers not to.
 
 ## Configuration
 
