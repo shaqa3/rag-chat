@@ -19,7 +19,27 @@ The vector store is a roll-your-own **SQLite + NumPy** index — no Chroma, FAIS
 or pgvector — so the retrieval mechanics are visible rather than hidden behind a
 library, and the whole thing runs with just `python` + `npm` (+ Ollama).
 
+## Demo
+
 ![RAG Chat demo — asking a question, watching the cited answer stream in from llama3.2, expanding a retrieved source with its cosine and BM25 scores, then inspecting hybrid retrieval in the retrieval inspector](assets/demo.gif)
+
+*Ask a question → the `llama3.2` answer streams in with an inline `[1]` citation →
+expanding a retrieved source reveals its cosine + BM25 scores → the retrieval
+inspector shows how hybrid ranking fuses dense and lexical results.*
+
+Three tabs drive the whole thing:
+
+- **Chat** — streaming answers with clickable `[n]` citations; the assistant
+  refuses instead of guessing when retrieval is too weak.
+- **Retrieval** — inspect any query's retrieved chunks, their dense / lexical /
+  fused scores, and whether the cite-or-refuse gate would fire.
+- **Evals** — run the labelled question set with hybrid reranking on vs off and
+  compare the metrics side by side.
+
+![RAG Chat UI — a streaming cited answer with expandable source passages showing cosine and BM25 scores, the corpus panel, and the hybrid-rerank toggle](assets/screenshot.png)
+
+Everything above runs on a local Ollama daemon — or with no daemon at all via the
+offline backend (`./start.sh --offline`).
 
 ## The RAG pipeline
 
@@ -72,8 +92,6 @@ library, and the whole thing runs with just `python` + `npm` (+ Ollama).
 - **Runs with zero external dependencies too** — a deterministic **offline
   backend** (hashed bag-of-words embeddings + an extractive answerer) exercises
   the entire loop with no GPU or daemon. It's what CI uses.
-
-![RAG Chat UI — a streaming cited answer with expandable source passages, a hybrid-rerank toggle, and the retrieval inspector](assets/screenshot.png)
 
 ## Quickstart
 
