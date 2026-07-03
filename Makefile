@@ -34,9 +34,19 @@ dev:
 	wait
 
 # Run the eval harness from the CLI (offline backend) and print the summary.
+# This is README Experiment 1; sweep it with `RAG_CHUNK_TOKENS=<n> make eval`.
 eval:
 	cd backend && . .venv/bin/activate && \
 		RAG_EMBED_BACKEND=offline RAG_LLM_BACKEND=offline python -m app.evalcli
+
+# Single eval run against real Ollama (needs `ollama serve` + models pulled).
+eval-ollama:
+	cd backend && . .venv/bin/activate && python -m app.evalcli
+
+# Repeated eval against real Ollama with mean/range aggregation — README
+# Experiment 2. Set RAG_EVAL_RUNS to change the run count (default 5).
+eval-repeats:
+	cd backend && . .venv/bin/activate && python -m app.eval_repeats
 
 docker:
 	docker compose up --build

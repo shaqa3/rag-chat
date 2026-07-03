@@ -199,8 +199,9 @@ a cheap *safety net* — it earns its keep when embeddings are weak, queries are
 exact-term/out-of-distribution, or the corpus is large and noisy, not as a
 guaranteed uplift on every setup. Answer metrics (coverage/grounded/accuracy)
 vary between runs because `llama3.2` sampling is non-deterministic; only the
-retrieval metrics (hit@k, MRR) are stable. Reproduce with `make eval` (Ollama
-running) — expect the answer numbers to wobble, the retrieval numbers not to.
+retrieval metrics (hit@k, MRR) are stable. Reproduce with `make eval-repeats`
+(Ollama running) — expect the answer numbers to wobble, the retrieval numbers not
+to.
 
 ## Configuration
 
@@ -227,7 +228,8 @@ backend/
     store.py      SQLite + NumPy vector store, in-process BM25
     retrieve.py   dense + lexical + RRF fusion
     eval.py       retrieval + answer metrics
-    evalcli.py    `python -m app.evalcli` experiment runner
+    evalcli.py    `python -m app.evalcli` — single run (Experiment 1)
+    eval_repeats.py  `python -m app.eval_repeats` — N-run aggregation (Experiment 2)
     ingest.py     text → chunks → embeddings → store; corpus seeding
   data/
     corpus/       bundled Nimbus sample docs (Markdown)
